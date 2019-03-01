@@ -1,8 +1,6 @@
 #include "ros/ros.h"
 #include "ti_tof/DepthArrayStamped.h"
 
-#define FRAME_ID "tof_camera" // TODO what is this and is it required?
-
 #define WIDTH   320
 #define HEIGHT  240
 
@@ -50,6 +48,7 @@ static void frameCallback(DepthCamera &dc, const Frame &frame, DepthCamera::Fram
 
     ti_tof::DepthArrayStamped msg;
     msg.header.stamp = ros::Time::now(); // should be time stamp of the frame
+    msg.header.frame_id = "tof_camera"; // id of the camera's coordinate system
     msg.width = WIDTH;
     msg.height = HEIGHT;
     msg.depth = f->depth;
