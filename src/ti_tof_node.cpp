@@ -1,5 +1,5 @@
 #include "ros/ros.h"
-#include "sensor_msgs/PointCloud2.h"
+#include "ti_tof/DepthArrayStamped.h"
 
 #define FRAME_ID "tof_camera"
 // TODO: fix width and height
@@ -15,7 +15,7 @@ int main(int argc, char **argv)
   ros::init(argc, argv, "ti_tof");
 
   ros::NodeHandle n;
-  ros::Publisher pub = n.advertise<sensor_msgs::PointCloud2>("point_cloud", 1);
+  ros::Publisher pub = n.advertise<ti_tof::DepthArrayStamped>("depth", 1);
 
   // TODO: remove loop rate
   // will be defined by frame rate -> publish and spinOnce without delay as soon as frame arrives
@@ -24,12 +24,9 @@ int main(int argc, char **argv)
   int count = 0;
   while (ros::ok())
   {
-    sensor_msgs::PointCloud2 msg;
+    ti_tof::DepthArrayStamped msg;
     msg.header.stamp = ros::Time::now(); // should be time stamp of the frame
-    msg.header.frame_id = FRAME_ID;
-    msg.width = WIDTH;
-    msg.height = HEIGHT;
-    // TODO: fill message with fields info and frame
+    // TODO: fill message with depth array
     pub.publish(msg);
 
     ros::spinOnce();
