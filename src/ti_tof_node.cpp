@@ -9,6 +9,10 @@
 #include <CameraSystem.h>
 using namespace Voxel;
 
+ros::Publisher *pub_p;
+
+static bool tof_connect(DepthCamera::FrameType frmType, int fps);
+
 /**
  * This tutorial demonstrates simple sending of messages over the ROS system.
  */
@@ -18,6 +22,7 @@ int main(int argc, char **argv)
 
   ros::NodeHandle n;
   ros::Publisher pub = n.advertise<ti_tof::DepthArrayStamped>("frame", 1);
+  pub_p = &pub;
 
   if (!tof_connect(DepthCamera::FRAME_DEPTH_FRAME, 5)) {
     fprintf(stderr, "error: failed to connect to ToF camera\n");
@@ -58,8 +63,11 @@ static void frameCallback(DepthCamera &dc, const Frame &frame, DepthCamera::Fram
     msg.height = HEIGHT;
     msg.depth = f->depth;
     msg.amplitude = f->amplitude;
-    pub.publish(msg);
+    pub_p->publish(msg);
 }
+
+#define DEFAULT_ILLUM_POWER 100
+#define DEFAULT_EXPOSURE    20
 
 CameraSystem _sys;
 DepthCameraPtr _depthCamera;

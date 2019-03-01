@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 find_package(cmake_modules REQUIRED)
 # find_package(Boost REQUIRED COMPONENTS system)
-
+find_package(PCL 1.7 REQUIRED COMPONENTS common)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -58,11 +58,19 @@ catkin_package(
 ## Build ##
 ###########
 
+add_definitions(${PCL_DEFINITIONS})
+add_definitions(-pthread -std=c++11 -fPIC -ffast-math -fpermissive)
+
+set(VOXEL_INCLUDE_DIRS . /usr/include/voxel /usr/include/voxel/pcl /usr/include/voxel/ti3dtof /usr/include/voxel/Filter )
+set(VOXEL_LIBRARIES /usr/lib/libti3dtof.so /usr/lib/libvoxel.so /usr/lib/libvoxelpcl.so)
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+  ${VOXEL_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
 )
 
 ## Declare a C++ executable
@@ -77,5 +85,7 @@ add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catk
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
   ${catkin_LIBRARIES}
+  ${VOXEL_LIBRARIES}
+  ${PCL_COMMON_LIBRARIES}
 )
 
