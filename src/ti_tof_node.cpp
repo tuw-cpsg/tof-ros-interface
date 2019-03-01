@@ -29,16 +29,7 @@ int main(int argc, char **argv)
     exit(EXIT_FAILURE);
   }
 
-  // TODO: remove loop rate
-  // will be defined by frame rate -> publish and spinOnce without delay as soon as frame arrives
-  //ros::Rate loop_rate(10);
-
-  //int count = 0;
-  while (ros::ok())
-  {
-    ros::spinOnce();
-    //loop_rate.sleep();
-  }
+  ros::spin();
 
   return 0;
 }
