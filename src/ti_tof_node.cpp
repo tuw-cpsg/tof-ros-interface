@@ -111,6 +111,7 @@ static bool tof_connect(DepthCamera::FrameType frmType, int fps)
    else
       return false;
 
+   /*
    // setup spatial and temportal median filters
    FilterPtr p = _sys.createFilter("Voxel::MedianFilter", DepthCamera::FRAME_RAW_FRAME_PROCESSED);
    if (!p)
@@ -134,6 +135,7 @@ static bool tof_connect(DepthCamera::FrameType frmType, int fps)
    p->set("deadband", 0.01f);
    _depthCamera->addFilter(p, DepthCamera::FRAME_RAW_FRAME_PROCESSED);
 #endif
+   */
 
    // Setup frame callback profile and settings
    _frameType = frmType;
