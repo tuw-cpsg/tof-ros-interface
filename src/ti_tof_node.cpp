@@ -22,7 +22,8 @@ int main(int argc, char **argv)
   ros::Publisher pub = n.advertise<ti_tof::DepthArrayStamped>("frame", 1);
   pub_p = &pub;
 
-  if (!tof_connect(DepthCamera::FRAME_DEPTH_FRAME, 5)) {
+  //if (!tof_connect(DepthCamera::FRAME_DEPTH_FRAME, 5)) {
+  if (!tof_connect(DepthCamera::FRAME_RAW_FRAME_UNPROCESSED, 5)) {
     fprintf(stderr, "error: failed to connect to ToF camera\n");
     exit(EXIT_FAILURE);
   }
@@ -34,26 +35,51 @@ int main(int argc, char **argv)
 
 static void frameCallback(DepthCamera &dc, const Frame &frame, DepthCamera::FrameType c)
 {
-    if (c != DepthCamera::FRAME_DEPTH_FRAME) {
+    if (c == DepthCamera::FRAME_RAW_FRAME_UNPROCESSED) {
+        const Voxel::ToFRawFrame *tof_f = dynamic_cast<const Voxel::ToFRawFrame *>(&frame);
+        const Voxel::ToFRawIQFrame *iq_f = dynamic_cast<const Voxel::ToFRawIQFrame *>(&frame);
+        const Voxel::RawDataFrame *data_f = dynamic_cast<const Voxel::RawDataFrame *>(&frame);
+
+        bool any_raw_frame = false;
+        if (tof_f) {
+            printf("got a ToFRawFrame\n");
+            any_raw_frame = true;
+
+            if (f->size.width != WIDTH || f->size.height != HEIGHT) {
+                fprintf(stderr, "warning: frame has wrong size, dropped\n");
+                return;
+            }
+        }
+        if (iq_f) {
+            printf("got a ToFRawIQFrame\n");
+            any_raw_frame = true;
+        }
+        if (data_f) {
+            printf("got a RawDataFrame\n");
+            any_raw_frame = true;
+        }
+        if (!any_raw_frame)
+            fprintf(stderr, "warning: cannot cast raw frame to any raw frame type\n");
+    }
+    else if (c == DepthCamera::FRAME_DEPTH_FRAME) {
+        const Voxel::DepthFrame *f = dynamic_cast<const Voxel::DepthFrame *>(&frame);
+
+        if (f->size.width != WIDTH || f->size.height != HEIGHT) {
+            fprintf(stderr, "warning: frame has wrong size, dropped\n");
+            return;
+        }
+
+        ti_tof::DepthArrayStamped msg;
+        msg.header.stamp = ros::Time::now(); // should be time stamp of the frame
+        msg.header.frame_id = "tof_camera"; // id of the camera's coordinate system
+        msg.width = WIDTH;
+        msg.height = HEIGHT;
+        msg.depth = f->depth;
+        msg.amplitude = f->amplitude;
+        pub_p->publish(msg);
+    }
+    else
         fprintf(stderr, "warning: invalid frame type, dropped\n");
-        return;
-    }
-
-    const Voxel::DepthFrame *f = dynamic_cast<const Voxel::DepthFrame *>(&frame);
-
-    if (f->size.width != WIDTH || f->size.height != HEIGHT) {
-        fprintf(stderr, "warning: frame has wrong size, dropped\n");
-        return;
-    }
-
-    ti_tof::DepthArrayStamped msg;
-    msg.header.stamp = ros::Time::now(); // should be time stamp of the frame
-    msg.header.frame_id = "tof_camera"; // id of the camera's coordinate system
-    msg.width = WIDTH;
-    msg.height = HEIGHT;
-    msg.depth = f->depth;
-    msg.amplitude = f->amplitude;
-    pub_p->publish(msg);
 }
 
 #define DEFAULT_ILLUM_POWER 100
