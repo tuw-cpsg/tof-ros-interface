@@ -22,8 +22,8 @@ int main(int argc, char **argv)
   ros::Publisher pub = n.advertise<ti_tof::DepthArrayStamped>("frame", 1);
   pub_p = &pub;
 
-  //if (!tof_connect(DepthCamera::FRAME_DEPTH_FRAME, 5)) {
-  if (!tof_connect(DepthCamera::FRAME_RAW_FRAME_UNPROCESSED, 5)) {
+  if (!tof_connect(DepthCamera::FRAME_DEPTH_FRAME, 20)) {
+  //if (!tof_connect(DepthCamera::FRAME_RAW_FRAME_UNPROCESSED, 20)) {
     fprintf(stderr, "error: failed to connect to ToF camera\n");
     exit(EXIT_FAILURE);
   }
@@ -45,7 +45,7 @@ static void frameCallback(DepthCamera &dc, const Frame &frame, DepthCamera::Fram
             printf("got a ToFRawFrame\n");
             any_raw_frame = true;
 
-            if (f->size.width != WIDTH || f->size.height != HEIGHT) {
+            if (tof_f->size.width != WIDTH || tof_f->size.height != HEIGHT) {
                 fprintf(stderr, "warning: frame has wrong size, dropped\n");
                 return;
             }
@@ -77,6 +77,8 @@ static void frameCallback(DepthCamera &dc, const Frame &frame, DepthCamera::Fram
         msg.depth = f->depth;
         msg.amplitude = f->amplitude;
         pub_p->publish(msg);
+
+        printf("published a frame\n");
     }
     else
         fprintf(stderr, "warning: invalid frame type, dropped\n");
