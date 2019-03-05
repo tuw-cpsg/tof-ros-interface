@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   message_generation
+  image_transport
 )
 
 ## System dependencies are found with CMake's conventions
@@ -58,34 +59,48 @@ catkin_package(
 ## Build ##
 ###########
 
-add_definitions(${PCL_DEFINITIONS})
-add_definitions(-pthread -std=c++11 -fPIC -ffast-math -fpermissive)
+# build only when PCL lib is present (only on RaspberryPi)
+if (PCL)
+  add_definitions(${PCL_DEFINITIONS})
+  add_definitions(-pthread -std=c++11 -fPIC -ffast-math -fpermissive)
 
-set(VOXEL_INCLUDE_DIRS . /usr/include/voxel /usr/include/voxel/pcl /usr/include/voxel/ti3dtof /usr/include/voxel/Filter )
-set(VOXEL_LIBRARIES /usr/lib/libti3dtof.so /usr/lib/libvoxel.so /usr/lib/libvoxelpcl.so)
+  set(VOXEL_INCLUDE_DIRS . /usr/include/voxel /usr/include/voxel/pcl /usr/include/voxel/ti3dtof /usr/include/voxel/Filter )
+  set(VOXEL_LIBRARIES /usr/lib/libti3dtof.so /usr/lib/libvoxel.so /usr/lib/libvoxelpcl.so)
 
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-include_directories(
-# include
-  ${catkin_INCLUDE_DIRS}
-  ${VOXEL_INCLUDE_DIRS}
-  ${PCL_INCLUDE_DIRS}
-)
+  ## Specify additional locations of header files
+  ## Your package locations should be listed before other locations
+  include_directories(
+    # include
+    ${catkin_INCLUDE_DIRS}
+    ${VOXEL_INCLUDE_DIRS}
+    ${PCL_INCLUDE_DIRS}
+  )
 
-## Declare a C++ executable
-## With catkin_make all packages are built within a single CMake context
-## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node src/ti_tof_node.cpp)
+  ## Declare a C++ executable
+  ## With catkin_make all packages are built within a single CMake context
+  ## The recommended prefix ensures that target names across packages don't collide
+  add_executable(${PROJECT_NAME}_node src/ti_tof_node.cpp)
 
-## Add cmake target dependencies of the executable
-## same as for the library above
-add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+  ## Add cmake target dependencies of the executable
+  ## same as for the library above
+  add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}_node
+  ## Specify libraries to link a library or executable target against
+  target_link_libraries(${PROJECT_NAME}_node
+    ${catkin_LIBRARIES}
+    ${VOXEL_LIBRARIES}
+    ${PCL_COMMON_LIBRARIES}
+  )
+else (PCL)
+  message(WARNING "PCL library not found. Only depth_to_image is built.")
+
+  include_directories(
+    ${catkin_INCLUDE_DIRS}
+  )
+endif (PCL)
+
+add_executable(depth_to_image src/depth_to_image.cpp)
+add_dependencies(depth_to_image ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(depth_to_image
   ${catkin_LIBRARIES}
-  ${VOXEL_LIBRARIES}
-  ${PCL_COMMON_LIBRARIES}
 )
-
