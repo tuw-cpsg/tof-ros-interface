@@ -18,7 +18,7 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "ti_tof");
 
-  ros::NodeHandle n;
+  ros::NodeHandle n("~");
   ros::Publisher pub = n.advertise<ti_tof::DepthArrayStamped>("frame", 1);
   pub_p = &pub;
 
